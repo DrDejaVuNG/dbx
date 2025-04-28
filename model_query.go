@@ -86,26 +86,29 @@ func (q *ModelQuery) Insert(attrs ...string) error {
 		return err
 	}
 
+	pkField := indirect(q.model.dbNameMap[pkName].getField(q.model.value))
+
 	// handle auto-incremental PK
 	query := q.builder.Insert(q.model.tableName, Params(cols)).WithContext(q.ctx)
-	pkValue, err := insertAndReturnPK(q.db, query, pkName)
+	pkValue, err := insertAndReturnPK(q.db, query, pkName, pkField)
 	if err != nil {
 		return err
 	}
 
-	pkField := indirect(q.model.dbNameMap[pkName].getField(q.model.value))
 	switch pkField.Kind() {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		pkField.SetUint(uint64(pkValue))
+		pkField.SetUint(uint64(pkValue.(int64)))
+	case reflect.String:
+		pkField.SetString(pkValue.(string))
 	default:
-		pkField.SetInt(pkValue)
+		pkField.SetInt(pkValue.(int64))
 	}
 
 	return nil
 }
 
-func insertAndReturnPK(db *DB, query *Query, pkName string) (int64, error) {
-	if db.DriverName() != "postgres" && db.DriverName() != "pgx" {
+func insertAndReturnPK(db *DB, query *Query, pkName string, pkField reflect.Value) (interface{}, error) {
+	if pkField.Kind() != reflect.String && db.DriverName() != "postgres" && db.DriverName() != "pgx" {
 		result, err := query.Execute()
 		if err != nil {
 			return 0, err
@@ -117,11 +120,19 @@ func insertAndReturnPK(db *DB, query *Query, pkName string) (int64, error) {
 	returning := fmt.Sprintf(" RETURNING %s", db.QuoteColumnName(pkName))
 	query.sql += returning
 	query.rawSQL += returning
-	var pkValue int64
-	err := query.Row(&pkValue)
-	return pkValue, err
+	switch pkField.Kind() {
+	case reflect.String:
+		var pkValue string
+		err := query.Row(&pkValue)
+		return pkValue, err
+	default:
+		var pkValue int64
+		err := query.Row(&pkValue)
+		return pkValue, err
+	}
 }
 
+// isAutoInc checks if the value is default zero value for primary key types.
 func isAutoInc(value interface{}) bool {
 	v := reflect.ValueOf(value)
 	switch v.Kind() {
@@ -131,6 +142,8 @@ func isAutoInc(value interface{}) bool {
 		return v.Uint() == 0
 	case reflect.Ptr:
 		return v.IsNil() || isAutoInc(v.Elem())
+	case reflect.String:
+		return v.String() == ""
 	case reflect.Invalid:
 		return true
 	}
