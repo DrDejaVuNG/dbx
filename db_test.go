@@ -12,14 +12,23 @@ import (
 	"strings"
 	"testing"
 
+	/* MySQL:
 	// @todo change to sqlite
 	_ "github.com/go-sql-driver/mysql"
+	*/
+	// PostgreSQL:
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
+	/* MySQL:
 	TestDSN     = "travis:@/pocketbase_dbx_test?parseTime=true"
 	FixtureFile = "testdata/mysql.sql"
+	*/
+	// PostgreSQL:
+	TestDSN     = "postgres://user:pass@127.0.0.1:5432/postgres?sslmode=disable"
+	FixtureFile = "testdata/postgres.sql"
 )
 
 func TestDB_NewFromDB(t *testing.T) {
@@ -336,7 +345,11 @@ func TestErrors_Error(t *testing.T) {
 }
 
 func getDB() *DB {
+	/* MySQL:
 	db, err := Open("mysql", TestDSN)
+	*/
+	// PostgreSQL:
+	db, err := Open("pgx", TestDSN)
 	if err != nil {
 		panic(err)
 	}

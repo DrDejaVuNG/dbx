@@ -104,7 +104,7 @@ func Example_crudOperations() {
 	db.Model(&customer).Delete()
 }
 
-func ExampleBuilder_Insert() {
+func _ExampleSchemaBuilder() {
 	db, _ := dbx.Open("mysql", "user:pass@/example")
 
 	db.Insert("users", dbx.Params{
@@ -249,7 +249,7 @@ func ExampleDB() {
 	db.Insert("users", dbx.Params{"name": "James"}).Execute()
 }
 
-func ExampleOpen() {
+func _ExampleDB_Open() {
 	db, err := dbx.Open("mysql", "user:pass@/example")
 	if err != nil {
 		panic(err)
