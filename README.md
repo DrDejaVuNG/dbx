@@ -1,11 +1,9 @@
-dbx
-[![Go Report Card](https://goreportcard.com/badge/github.com/pocketbase/dbx)](https://goreportcard.com/report/github.com/pocketbase/dbx)
-[![GoDoc](https://godoc.org/github.com/pocketbase/dbx?status.svg)](https://pkg.go.dev/github.com/pocketbase/dbx)
+dbx [![GoDoc](https://godoc.org/ganigeorgiev.com/pocketbase/dbx?status.svg)](https://pkg.go.dev/ganigeorgiev.com/pocketbase/dbx)
 ================================================================================
 
 > ⚠️ This is a maintained fork of [go-ozzo/ozzo-dbx](https://github.com/go-ozzo/ozzo-dbx) (see [#103](https://github.com/go-ozzo/ozzo-dbx/issues/103)).
 >
-> Currently the changes are primarily related to better SQLite support and some other minor improvements. For more details please refer to the [Releases CHANGELOG](https://github.com/pocketbase/dbx/releases).
+> Currently the changes are primarily related to better SQLite support and some other minor improvements. For more details please refer to the [Releases CHANGELOG](https://ganigeorgiev.com/pocketbase/dbx/releases).
 
 
 ## Summary
@@ -60,7 +58,7 @@ Go 1.13 or above.
 Run the following command to install the package:
 
 ```
-go get github.com/pocketbase/dbx
+go get ganigeorgiev.com/pocketbase/dbx
 ```
 
 In addition, install the specific DB driver package for the kind of database to be used. Please refer to
@@ -98,7 +96,7 @@ The following code snippet shows how you can use this package in order to access
 package main
 
 import (
-	"github.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/dbx"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -140,7 +138,7 @@ And the following example shows how to use the query building capability of this
 package main
 
 import (
-	"github.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/dbx"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -717,7 +715,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/dbx"
 )
 
 func main() {

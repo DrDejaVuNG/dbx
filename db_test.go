@@ -374,7 +374,7 @@ func getPreparedDB() *DB {
 	return db
 }
 
-// Naming according to issue 49 ( https://github.com/pocketbase/dbx/issues/49 )
+// Naming according to issue 49 (https://github.com/go-ozzo/ozzo-dbx/issues/49)
 
 type ArtistDAO struct {
 	nickname string
