@@ -60,6 +60,15 @@ type (
 		// ExecLogFunc is called each time when a SQL statement is executed.
 		ExecLogFunc ExecLogFunc
 
+		// QuoteIdentifiers (PostgreSQL only) double-quotes the unquoted mixed-case
+		// names (userId) and a bare user in the final SQL of every query, so raw
+		// SQL written for SQLite (NewExp, NewQuery, Select/OrderBy/GroupBy strings
+		// with parentheses) keeps its meaning: PostgreSQL folds unquoted names to
+		// lower case and reads user as CURRENT_USER. It runs after the {:param},
+		// [[column]] and {{table}} processing. See quoteIdentifiers for the rules.
+		// Defaults to false.
+		QuoteIdentifiers bool
+
 		sqlDB      *sql.DB
 		driverName string
 		ctx        context.Context
@@ -123,14 +132,15 @@ func MustOpen(driverName, dsn string) (*DB, error) {
 // Clone makes a shallow copy of DB.
 func (db *DB) Clone() *DB {
 	db2 := &DB{
-		driverName:   db.driverName,
-		sqlDB:        db.sqlDB,
-		FieldMapper:  db.FieldMapper,
-		TableMapper:  db.TableMapper,
-		PerfFunc:     db.PerfFunc,
-		LogFunc:      db.LogFunc,
-		QueryLogFunc: db.QueryLogFunc,
-		ExecLogFunc:  db.ExecLogFunc,
+		driverName:       db.driverName,
+		sqlDB:            db.sqlDB,
+		FieldMapper:      db.FieldMapper,
+		TableMapper:      db.TableMapper,
+		PerfFunc:         db.PerfFunc,
+		LogFunc:          db.LogFunc,
+		QueryLogFunc:     db.QueryLogFunc,
+		ExecLogFunc:      db.ExecLogFunc,
+		QuoteIdentifiers: db.QuoteIdentifiers,
 	}
 	db2.Builder = db2.newBuilder(db.sqlDB)
 	return db2
@@ -298,7 +308,8 @@ var (
 
 // processSQL replaces the named param placeholders in the given SQL with anonymous ones.
 // It also quotes table names and column names found in the SQL if these names are enclosed
-// within double square/curly brackets. The method will return the updated SQL and the list of parameter names.
+// within double square/curly brackets, and the unquoted identifiers if QuoteIdentifiers is set.
+// The method will return the updated SQL and the list of parameter names.
 func (db *DB) processSQL(s string) (string, []string) {
 	var placeholders []string
 	count := 0
@@ -313,6 +324,9 @@ func (db *DB) processSQL(s string) (string, []string) {
 		}
 		return db.QuoteColumnName(m[2 : len(m)-2])
 	})
+	if db.QuoteIdentifiers {
+		s = quoteIdentifiers(s)
+	}
 	return s, placeholders
 }
 
